@@ -61,11 +61,7 @@ func (driver *Driver) Fini() error {
 	return nil
 }
 
-func (driver *Driver) Render() error {
-	if err := driver.Wait(); err != nil {
-		return err
-	}
-
+func (driver *Driver) render() error {
 	if C.ws2811_render(driver.cptr()) < 0 {
 		return ErrHardware
 	}
@@ -73,7 +69,15 @@ func (driver *Driver) Render() error {
 	return nil
 }
 
-func (driver *Driver) Ready() (bool, error) {
+func (driver *Driver) Render() error {
+	if err := driver.Wait(); err != nil {
+		return err
+	}
+
+	return driver.render()
+}
+
+func (driver *Driver) ready() (bool, error) {
 	ret := C.ws2811_dma_ready(driver.cptr())
 
 	if ret < 0 {
@@ -88,7 +92,7 @@ func (driver *Driver) Wait() error {
 
 	for {
 		var ready bool
-		ready, err = driver.Ready()
+		ready, err = driver.ready()
 		if ready || err != nil {
 			break
 		}
