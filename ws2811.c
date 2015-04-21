@@ -672,6 +672,32 @@ int ws2811_wait(ws2811_t *ws2811)
 }
 
 /**
+ * Check DMA status without waiting (useful for Go binding).
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  1 if ready, 0 if not, -1 on DMA competion error
+ */
+int ws2811_dma_ready(ws2811_t *ws2811)
+{
+    volatile dma_t *dma = ws2811->device->dma;
+
+    if ((dma->cs & RPI_DMA_CS_ACTIVE) &&
+           !(dma->cs & RPI_DMA_CS_ERROR))
+    {
+	    return 0;
+    }
+
+    if (dma->cs & RPI_DMA_CS_ERROR)
+    {
+        fprintf(stderr, "DMA Error: %08x\n", dma->debug);
+        return -1;
+    }
+
+    return 1;
+}
+
+/**
  * Render the PWM DMA buffer from the user supplied LED arrays and start the DMA
  * controller.  This will update all LEDs on both PWM channels.
  *

@@ -63,6 +63,7 @@ int ws2811_init(ws2811_t *ws2811);               //< Initialize buffers/hardware
 void ws2811_fini(ws2811_t *ws2811);              //< Tear it all down
 int ws2811_render(ws2811_t *ws2811);             //< Send LEDs off to hardware
 int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
+int ws2811_dma_ready(ws2811_t *ws2811);          //< Check DMA status without waiting
 
 
 #endif /* __WS2811_H__ */

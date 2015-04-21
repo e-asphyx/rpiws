@@ -9,6 +9,7 @@ import "C"
 import (
 	"errors"
 	"reflect"
+	"runtime"
 	"unsafe"
 )
 
@@ -61,6 +62,10 @@ func (driver *Driver) Fini() error {
 }
 
 func (driver *Driver) Render() error {
+	if err := driver.Wait(); err != nil {
+		return err
+	}
+
 	if C.ws2811_render(driver.cptr()) < 0 {
 		return ErrHardware
 	}
@@ -68,12 +73,29 @@ func (driver *Driver) Render() error {
 	return nil
 }
 
-func (driver *Driver) Wait() error {
-	if C.ws2811_wait(driver.cptr()) < 0 {
-		return ErrHardware
+func (driver *Driver) Ready() (bool, error) {
+	ret := C.ws2811_dma_ready(driver.cptr())
+
+	if ret < 0 {
+		return false, ErrHardware
 	}
 
-	return nil
+	return ret != 0, nil
+}
+
+func (driver *Driver) Wait() error {
+	var err error
+
+	for {
+		var ready bool
+		ready, err = driver.Ready()
+		if ready || err != nil {
+			break
+		}
+		runtime.Gosched()
+	}
+
+	return err
 }
 
 func (channel *Channel) Leds() []Led {
