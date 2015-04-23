@@ -1,9 +1,9 @@
 package rpiws
 
 /*
+#cgo CFLAGS: -O2 -Wall
 
 #include "ws2811.h"
-
 */
 import "C"
 import (
